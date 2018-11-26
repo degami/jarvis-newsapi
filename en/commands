@@ -1,0 +1,3 @@
+*GET*SOURCES*==say "$(js_pg_newsapi_get_sources)"
+*LAST*NEWS*==say "$(js_pg_newsapi_last_news)"
+*GET NEWS ON (*)==say "$(js_pg_newsapi_get_news (1))"

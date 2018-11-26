@@ -1,0 +1,3 @@
+*DIMMI*FONTI*==say "$(js_pg_newsapi_get_sources)"
+*ULTIME*NOTIZIE*==say "$(js_pg_newsapi_last_news)"
+*DAMMI NOTIZIE SU (*)==say "$(js_pg_newsapi_get_news (1))"
