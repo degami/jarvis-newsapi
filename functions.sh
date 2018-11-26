@@ -16,7 +16,7 @@ jv_pg_newsapi_get_data_from_json() {
     local jsondata=$1
 
     local title=$(echo $jsondata | jq ".title")
-    local description=$(echo $jsondata | jq ".description")
+    local description=$(echo $jsondata | jq -r ".description")
     local source=$(echo $jsondata | jq ".source.name")
     local publishedAt=$(date --date "$(echo $jsondata | jq -r .publishedAt)" "+%d %B %Y")
 
