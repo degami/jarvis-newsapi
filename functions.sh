@@ -62,7 +62,7 @@ js_pg_newsapi_get_news(){
     local jsondata=$(curl -s "$url")
     local total_results=$(echo $jsondata | jq ".totalResults")
 
-    echo "$(pg_newsapi_lang i_got) $total_results $(pg_newsapi_lang results) $(pg_newsapi_lang on) $q"
+    echo "$(pg_newsapi_lang i_got) $total_results $(pg_newsapi_lang results) $(pg_newsapi_lang on) \"$q\""
     for i in $(seq 0 $(bc <<< "$total_results - 1") ); do 
         local item=$(echo $jsondata | jq ".articles[$i]")
         echo $(jv_pg_newsapi_get_data_from_json "$item"); 
