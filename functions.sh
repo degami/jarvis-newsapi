@@ -22,6 +22,7 @@ jv_pg_newsapi_get_data_from_json() {
     local publishedAt=$(date --date "$(echo $jsondata | jq -r .publishedAt)" "+%d %B %Y")
 
     if [[ ! -z $index ]]; then
+        index=$(bc <<< "$index + 1")
         echo "$(pg_newsapi_lang element) $index"
     fi
     echo "$(pg_newsapi_lang source_is) $source"
