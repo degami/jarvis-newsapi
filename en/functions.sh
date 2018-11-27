@@ -11,6 +11,7 @@
 
 pg_newsapi_lang () {
     case "$1" in
+        element) echo "element";;
         publised_on) echo "publised on";;
         source_is) echo "source is";;
         title) echo "title";;

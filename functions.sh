@@ -14,12 +14,16 @@ jv_pg_newsapi_urlencode(){
 
 jv_pg_newsapi_get_data_from_json() {
     local jsondata=$1
+    local index=$2
 
     local title=$(echo $jsondata | jq ".title")
     local description=$(echo $jsondata | jq -r ".description")
     local source=$(echo $jsondata | jq ".source.name")
     local publishedAt=$(date --date "$(echo $jsondata | jq -r .publishedAt)" "+%d %B %Y")
 
+    if [[ ! -z $index ]]; then
+        echo "$(pg_newsapi_lang element) $index"
+    fi
     echo "$(pg_newsapi_lang source_is) $source"
     echo "$(pg_newsapi_lang title) $title"
     echo "$description"
@@ -52,7 +56,7 @@ js_pg_newsapi_last_news(){
     echo "$(pg_newsapi_lang i_got) $total_results $(pg_newsapi_lang results)"
     for i in $(seq 0 $(bc <<< "$total_results - 1") ); do 
         local item=$(echo $jsondata | jq ".articles[$i]")
-        echo $(jv_pg_newsapi_get_data_from_json "$item"); 
+        echo $(jv_pg_newsapi_get_data_from_json "$item" $i); 
     done
 }
 
@@ -65,6 +69,6 @@ js_pg_newsapi_get_news(){
     echo "$(pg_newsapi_lang i_got) $total_results $(pg_newsapi_lang results) $(pg_newsapi_lang on) \"$q\""
     for i in $(seq 0 $(bc <<< "$total_results - 1") ); do 
         local item=$(echo $jsondata | jq ".articles[$i]")
-        echo $(jv_pg_newsapi_get_data_from_json "$item"); 
+        echo $(jv_pg_newsapi_get_data_from_json "$item" $i); 
     done
 }
