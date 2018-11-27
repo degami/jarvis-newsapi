@@ -21,14 +21,24 @@ jv_pg_newsapi_get_data_from_json() {
     local source=$(echo $jsondata | jq ".source.name")
     local publishedAt=$(date --date "$(echo $jsondata | jq -r .publishedAt)" "+%d %B %Y")
 
-    if [[ ! -z $index ]]; then
-        index=$(bc <<< "$index + 1")
-        echo "$(pg_newsapi_lang element) $index"
+    if [[ ! -z $source || ! -z $title || ! -z $description || ! -z $publishedAt ]]; then
+        if [[ ! -z $index ]]; then
+            index=$(bc <<< "$index + 1")
+            echo "$(pg_newsapi_lang element) $index"
+        fi
+        if [[ ! -z $source ]]; then
+            echo "$(pg_newsapi_lang source_is) $source"
+        fi
+        if [[ ! -z $title ]]; then
+            echo "$(pg_newsapi_lang title) $title"
+        fi
+        if [[ ! -z $description ]]; then
+            echo "$description"
+        fi
+        if [[ ! -z $publishedAt ]]; then
+            echo "$(pg_newsapi_lang publised_on) $publishedAt"
+        fi
     fi
-    echo "$(pg_newsapi_lang source_is) $source"
-    echo "$(pg_newsapi_lang title) $title"
-    echo "$description"
-    echo "$(pg_newsapi_lang publised_on) $publishedAt"
 }
 
 js_pg_newsapi_get_sources(){
