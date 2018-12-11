@@ -15,12 +15,10 @@ jv_pg_newsapi_urlencode(){
 jv_pg_newsapi_get_data_from_json() {
     local jsondata=$1
     local index=$2
-
     local title=$(echo $jsondata | jq ".title")
     local description=$(echo $jsondata | jq -r ".description")
     local source=$(echo $jsondata | jq ".source.name")
     local publishedAt=$(date --date "$(echo $jsondata | jq -r .publishedAt)" "+%d %B %Y")
-
     if [[ ! -z $source || ! -z $title || ! -z $description || ! -z $publishedAt ]]; then
         if [[ ! -z $index ]]; then
             index=$(bc <<< "$index + 1")
@@ -37,6 +35,26 @@ jv_pg_newsapi_get_data_from_json() {
         fi
         if [[ ! -z $publishedAt ]]; then
             echo "$(pg_newsapi_lang publised_on) $publishedAt"
+        fi
+    fi
+}
+
+jv_pg_newsapi_get_detail_from_json() {
+    local jsondata=$1
+    local index=$2
+    local title=$(echo $jsondata | jq ".title")
+    local content=$(echo $jsondata | jq -r ".content")
+    local source=$(echo $jsondata | jq ".source.name")
+    local publishedAt=$(date --date "$(echo $jsondata | jq -r .publishedAt)" "+%d %B %Y")
+    if [[ ! -z $title || ! -z $content || ! -z $publishedAt ]]; then
+        if [[ ! -z $title ]]; then
+            echo "$(pg_newsapi_lang title) $title"
+        fi
+        if [[ ! -z $publishedAt ]]; then
+            echo "$(pg_newsapi_lang publised_on) $publishedAt"
+        fi
+        if [[ ! -z $content ]]; then
+            echo "$content"
         fi
     fi
 }
@@ -59,11 +77,32 @@ js_pg_newsapi_get_url(){
     fi    
 }
 
-js_pg_newsapi_last_news(){
-    local url=$(js_pg_newsapi_get_url)
-    local jsondata=$(curl -s "$url")
-    local total_results=$(echo $jsondata | jq ".totalResults")
+js_pg_newsapi_json_save_path(){
+    echo "$jv_dir/plugins_installed/jarvis-newsapi/.last_newsapi_query.log"    
+}
 
+js_pg_newsapi_get_json(){
+    local q="$@"
+    if [[ ! -z $q ]]; then
+        local url="$(js_pg_newsapi_get_url)&q="$(jv_pg_newsapi_urlencode "$q")
+    else
+        local url=$(js_pg_newsapi_get_url)
+    fi
+    curl -s "$url" -o $(js_pg_newsapi_json_save_path)
+    cat $(js_pg_newsapi_json_save_path)
+}
+
+js_pg_get_last_query_json(){
+    if [[ -e $(js_pg_newsapi_json_save_path) ]]; then
+        cat $(js_pg_newsapi_json_save_path)
+    else
+        js_pg_newsapi_get_json
+    fi
+}
+
+js_pg_newsapi_last_news(){
+    local jsondata=$(js_pg_newsapi_get_json)
+    local total_results=$(echo $jsondata | jq ".totalResults")
     echo "$(pg_newsapi_lang i_got) $total_results $(pg_newsapi_lang results)"
     for i in $(seq 0 $(bc <<< "$total_results - 1") ); do 
         local item=$(echo $jsondata | jq ".articles[$i]")
@@ -73,13 +112,18 @@ js_pg_newsapi_last_news(){
 
 js_pg_newsapi_get_news(){
     local q="$@"
-    local url="$(js_pg_newsapi_get_url)&q="$(jv_pg_newsapi_urlencode "$q")
-    local jsondata=$(curl -s "$url")
+    local jsondata=$(js_pg_newsapi_get_json "$q")
     local total_results=$(echo $jsondata | jq ".totalResults")
-
     echo "$(pg_newsapi_lang i_got) $total_results $(pg_newsapi_lang results) $(pg_newsapi_lang on) \"$q\""
     for i in $(seq 0 $(bc <<< "$total_results - 1") ); do 
         local item=$(echo $jsondata | jq ".articles[$i]")
         echo $(jv_pg_newsapi_get_data_from_json "$item" $i); 
     done
+}
+
+js_pg_newsapi_detail_news(){
+    local index=$(bc <<< "$1 - 1")
+    local jsondata=$(js_pg_get_last_query_json)
+    local item=$(echo $jsondata | jq ".articles[$index]")
+    echo $(jv_pg_newsapi_get_detail_from_json "$item" $i); 
 }
