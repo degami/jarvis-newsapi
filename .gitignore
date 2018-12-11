@@ -15,3 +15,5 @@
 
 # sftp configuration file
 sftp-config.json
+
+.last_newsapi_query.log
